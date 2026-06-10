@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>俄羅斯方塊 - Tetris Pro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; font-family: 'Orbitron', sans-serif;
+        }
+
+        #game-wrapper {
+            display: flex; flex-direction: row; align-items: center; gap: 40px;
+            padding: 30px; background: rgba(255, 255, 255, 0.03);
+            border-radius: 30px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar { flex: 0 0 240px; display: flex; flex-direction: column; gap: 25px; }
+
+        #game-container {
+            position: relative; width: 480px; height: 800px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        canvas#tetris {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            background-color: #000; box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.07); padding: 15px;
+            border-radius: 15px; text-align: center; border-left: 5px solid #0DC2FF;
+        }
+
+        .stat-box .label { font-size: 0.8rem; color: #888; letter-spacing: 2px; }
+        .stat-box .value { font-size: 2rem; font-weight: bold; color: #fff; }
+        .stat-box .sub { font-size: 0.75rem; color: #666; margin-top: 2px; }
+
+        #next { background: #000; border: 2px solid rgba(255, 255, 255, 0.1); margin: 10px auto; display: block; width: 120px; height: 120px; }
+
+        .controls-hint {
+            margin-top: auto; padding: 15px; background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px; font-size: 0.75rem; color: #aaa; line-height: 2;
+        }
+
+        @keyframes scoreFloat {
+            0% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -160%); }
+        }
+        #score-popup {
+            position: absolute; top: 50%; left: 50%; z-index: 30;
+            font-size: 2.5rem; font-weight: bold; color: #0DFF72;
+            text-shadow: 0 0 20px rgba(13, 255, 114, 0.6);
+            pointer-events: none; opacity: 0;
+            transform: translate(-50%, -50%);
+        }
+        #score-popup.active {
+            animation: scoreFloat 0.8s ease-out forwards;
+        }
+
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 20; border-radius: 5px;
+        }
+
+        button {
+            padding: 12px 35px; font-size: 1.2rem; background: linear-gradient(45deg, #0DC2FF, #0DFF72);
+            border: none; color: white; cursor: pointer; border-radius: 30px; font-family: 'Orbitron';
+        }
+
+        #game-over { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,0,0,0.4); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:5; }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <div class="sidebar">
+            <div class="stat-box level-box"><div class="label">LEVEL</div><div id="level" class="value">1</div></div>
+            <div class="stat-box"><div class="label">SCORE</div><div id="score" class="value">0</div></div>
+            <div class="stat-box"><div class="label">LINES</div><div id="lines" class="value">0</div></div>
+            <div class="stat-box"><div class="label">BEST</div><div id="best" class="value">0</div></div>
+            <div class="stat-box"><div class="label">NEXT</div><canvas id="next" width="120" height="120"></canvas></div>
+            <div class="controls-hint">
+                <p><span style="color:#0DFF72">← →</span> : MOVE</p>
+                <p><span style="color:#0DFF72">↑</span> : ROTATE</p>
+                <p><span style="color:#0DFF72">↓</span> : DROP</p>
+                <p><span style="color:#0DFF72">SPACE</span> : HARD DROP</p>
+                <hr style="border: 0; border-top: 1px solid #333;">
+                <p><span style="color:#0DFF72">P</span> : PAUSE | <span style="color:#0DFF72">R</span> : RESTART</p>
+                <hr style="border: 0; border-top: 1px solid #333;">
+                <p>SPEED: <span id="speed-display" style="color:#FFE135">1000ms</span></p>
+            </div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="tetris" width="480" height="800"></canvas>
+            <div id="overlay"><h2 id="overlay-title">TETRIS</h2><button onclick="startGame()">START</button></div>
+            <div id="game-over"><h2 style="color:#ff4d4d">GAME OVER</h2><p>Score: <span id="final-score">0</span></p><button onclick="resetGame()">RETRY</button></div>
+            <div id="score-popup"></div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
