@@ -1,63 +1,64 @@
 # 🧊 Tetris Pro — 俄羅斯方塊
 
 > A cyberpunk-styled Tetris game with **999-level progression**, dynamic difficulty, and real-time visual feedback.  
-> 賽博龐克風格的俄羅斯方塊，支援 999 級難度與即時視覺回饋。
+> 賽博龐克風格的俄羅斯方塊，支援 999 級難度與即時視覺回饋。  
+> 打開瀏覽器就能玩，免安裝、無依賴、純前端。
 
-[![Play](https://img.shields.io/badge/▶_PLAY_NOW-0DFF72?style=for-the-badge&logo=github&logoColor=black)](https://rexLai-TW.github.io/tetris-game)
+[![Play](https://img.shields.io/badge/▶_立即遊玩_PLAY-0DFF72?style=for-the-badge&logo=github&logoColor=black)](https://rexLai-TW.github.io/tetris-game)
 ![Canvas](https://img.shields.io/badge/Canvas-HT5-FFE135?style=flat-square)
 ![JS](https://img.shields.io/badge/vanilla-JS-F538FF?style=flat-square)
 ![Levels](https://img.shields.io/badge/levels-999-0DC2FF?style=flat-square)
 
 ---
 
-## ✨ Features
+## ✨ 特色 Features
 
-| Feature | Description |
-|---------|-------------|
-| **999 Levels** | Level up every 100 points, speed increases 20% per level (min 50ms interval) |
-| **⚡ 1-Click Start** | Open `index.html` in any browser — no build tools, no install |
-| **🎨 Dynamic Background** | Level-driven hue rotation from deep blue → violet → magenta |
-| **💥 Line-Clear Flash** | White flash overlay fades out on every line clear |
-| **🏆 Score Popup** | Floating `+10` `+20` `+40` `+80` text floats up & fades |
-| **📊 Live Stats** | LEVEL · SCORE · LINES · BEST (high score) · SPEED |
-| **🔮 Next Piece Preview** | Shows upcoming piece centered in a preview window |
-| **💾 High Score** | Persisted in `localStorage` across sessions |
-| **⌨️ Full Keyboard** | Move, rotate, soft drop, hard drop, pause, restart |
-| **🎯 480×800 Canvas** | 2× enlarged blocks for a crisp, modern look |
-
----
-
-## 🎮 Controls
-
-| Key | Action |
-|-----|--------|
-| `←` `→` | Move piece |
-| `↑` | Rotate |
-| `↓` | Soft drop (accelerate) |
-| `SPACE` | Hard drop (instant place) |
-| `P` | Pause / Resume |
-| `R` | Restart game |
+| 功能 | 說明 |
+|------|------|
+| **999 級難度** | 每 100 分升一級，速度每次增加 20%（最快 50ms 一格） |
+| **⚡ 一鍵即玩** | 任何瀏覽器打開 `index.html` 直接開始，無需安裝 |
+| **🎨 動態背景** | 背景色相隨等級旋轉：深藍 → 紫 → 洋紅 |
+| **💥 消行閃爍** | 消除時白閃覆蓋，漸淡消失 |
+| **🏆 分數飄字** | `+10` `+20` `+40` `+80` 浮動文字向上飄移淡出 |
+| **📊 即時面板** | LEVEL · SCORE · LINES · BEST · SPEED |
+| **🔮 下一塊預覽** | 預留預覽框，置中顯示下一塊方塊 |
+| **💾 最高分紀錄** | 自動儲存至 `localStorage`，跨場次保留 |
+| **⌨️ 完整鍵盤操作** | 移動、旋轉、軟降、硬降、暫停、重開 |
+| **🎯 480×800 畫布** | 2 倍放大方塊，清晰現代 |
 
 ---
 
-## 🖼️ Screenshots
+## 🎮 操作 Controls
+
+| 按鍵 | 動作 |
+|------|------|
+| `←` `→` | 左右移動 Move |
+| `↑` | 旋轉 Rotate |
+| `↓` | 加速下落 Soft Drop |
+| `SPACE` | 瞬間硬降 Hard Drop |
+| `P` | 暫停 / 繼續 Pause / Resume |
+| `R` | 重新開始 Restart |
+
+---
+
+## 🖼️ 畫面示意 Layout
 
 ```
 ┌─────────────────────────────────────┐
-│   LEVEL  ████████████████████████  │
-│   SCORE  280                       │
-│   LINES  12                        │
-│   BEST   280                       │
+│   LEVEL  15                         │
+│   SCORE  1480                       │
+│   LINES  23                         │
+│   BEST   2000                       │
 │   NEXT   [■]                       │
 │                                    │
-│   ← → : MOVE          SPEED: 256ms│
-│   ↑   : ROTATE                     │
-│   ↓   : DROP                       │
-│   SPACE: HARD DROP                 │
-│   P   : PAUSE | R : RESTART        │
+│   ← → : 移動          速度: 137ms │
+│   ↑   : 旋轉                       │
+│   ↓   : 加速                       │
+│   SPACE: 硬降                      │
+│   P   : 暫停 | R : 重開           │
 ├─────────────────────────────────────┤
 │        ┌─────────────────┐         │
-│        │                 │         │
+│        │   遊戲畫面       │         │
 │        │   ██  ██        │         │
 │        │   ██  ██  ██    │         │
 │        │      ██  ██     │         │
@@ -70,58 +71,61 @@
 
 ---
 
-## 🚀 Quick Start
+## 🚀 快速開始 Quick Start
 
 ```bash
-# Clone the repo
+# 下載專案
 git clone https://github.com/RexLai-TW/tetris-game.git
 
-# Open in browser — that's it!
-open tetris-game/index.html
+# 用瀏覽器打開 — 就這樣！
+start tetris-game/index.html    # Windows
+open tetris-game/index.html     # macOS
 ```
 
-No dependencies. No build steps. Just pure vanilla JavaScript + Canvas.
+完全無依賴、無建置步驟，純粹的 Vanilla JavaScript + Canvas。
 
 ---
 
-## 🧠 Scoring System
+## 🧠 計分系統 Scoring
 
-| Lines Cleared | Score | Progression |
-|--------------|-------|-------------|
-| 1 line | 10 pts | 1 line × 10 |
-| 2 lines | 10 + 20 = 30 pts | Doubles each line |
-| 3 lines | 10 + 20 + 40 = 70 pts | Doubles each line |
-| 4 lines (Tetris) | 10 + 20 + 40 + 80 = 150 pts | Doubles each line |
+| 消除行數 | 得分 | 倍率 |
+|----------|------|------|
+| 1 行 | 10 分 | 1 行 × 10 |
+| 2 行 | 10 + 20 = 30 分 | 每行翻倍 |
+| 3 行 | 10 + 20 + 40 = 70 分 | 每行翻倍 |
+| 4 行（Tetris） | 10 + 20 + 40 + 80 = 150 分 | 每行翻倍 |
 
-- **Level up** every 100 points
-- **Drop speed** = `baseInterval × 0.8^level` (min 50ms)
-- At level 1: 1000ms per drop → Level 14: ~100ms → Level 999: 50ms
-
----
-
-## 🛠️ Tech Stack
-
-- **HTML5** — Structure & glassmorphism CSS
-- **Canvas API** — Game rendering (480×800, 40px scale)
-- **Vanilla JavaScript** — Game loop, collision, rotation, scoring
-- **CSS Animations** — Score popup, dynamic background
-- **localStorage** — High score persistence
+- **升級**：每 100 分升一級
+- **落下速度** = `1000 × 0.8^(level-1)` ms（最快 50ms）
+- Lv 1: 1000ms → Lv 14: ~100ms → Lv 999: 50ms
 
 ---
 
-## 📁 File Structure
+## 🛠️ 技術棧 Tech Stack
+
+| 技術 | 用途 |
+|------|------|
+| **HTML5** | 結構 + Glassmorphism CSS |
+| **Canvas API** | 遊戲渲染 (480×800, 40px 縮放) |
+| **Vanilla JavaScript** | 遊戲迴圈、碰撞、旋轉、計分 |
+| **CSS 動畫** | 分數飄字、動態背景 |
+| **localStorage** | 最高分紀錄持久化 |
+
+---
+
+## 📁 檔案結構 File Structure
 
 ```
 tetris-game/
-├── index.html      # HTML + CSS (layout, sidebar, animations)
-├── game.js         # Game logic (piece, collision, scoring, levels)
-├── style.css       # (standalone, unused — all CSS in index.html)
-├── tetris.html     # (previous version, unused)
-└── README.md       # You are here
+├── index.html      # HTML + CSS（版面、側欄、動畫）
+├── game.js         # 遊戲邏輯（方塊、碰撞、計分、等級）
+├── style.css       # 獨立 CSS（未使用，全部寫在 index.html）
+├── tetris.html     # 舊版備份（未使用）
+└── README.md       # 本說明文件
 ```
 
 ---
 
-## 📝 License
+## 📝 授權 License
 
-MIT — feel free to fork, modify, and share.
+MIT — 歡迎 Fork、修改、分享。
