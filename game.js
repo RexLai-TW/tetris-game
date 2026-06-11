@@ -88,6 +88,63 @@ function hexToRgb(hex) {
     return `${r}, ${g}, ${b}`;
 }
 
+function hexToRgbObj(hex) {
+    const h = hex.replace('#', '');
+    return {
+        r: parseInt(h.substring(0, 2), 16),
+        g: parseInt(h.substring(2, 4), 16),
+        b: parseInt(h.substring(4, 6), 16)
+    };
+}
+
+function drawBlock(ctx, x, y, color) {
+    const {r, g, b} = hexToRgbObj(color);
+    // Precompute shade variations
+    const light   = `rgb(${Math.min(255, r + 60)},  ${Math.min(255, g + 60)},  ${Math.min(255, b + 60)})`;
+    const lighter = `rgb(${Math.min(255, r + 110)}, ${Math.min(255, g + 110)}, ${Math.min(255, b + 110)})`;
+    const dark    = `rgb(${Math.max(0, r - 50)},    ${Math.max(0, g - 50)},    ${Math.max(0, b - 50)})`;
+    const darker  = `rgb(${Math.max(0, r - 90)},    ${Math.max(0, g - 90)},    ${Math.max(0, b - 90)})`;
+
+    // Base color
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 1, 1);
+
+    // Top half: lighter
+    ctx.fillStyle = light;
+    ctx.fillRect(x, y, 1, 0.5);
+
+    // Top edge: brightest highlight (specular)
+    ctx.fillStyle = lighter;
+    ctx.fillRect(x, y, 1, 0.12);
+
+    // Bottom half: darker
+    ctx.fillStyle = dark;
+    ctx.fillRect(x, y + 0.5, 1, 0.5);
+
+    // Bottom edge: darkest shadow
+    ctx.fillStyle = darker;
+    ctx.fillRect(x, y + 0.92, 1, 0.08);
+
+    // Right edge: ambient occlusion shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillRect(x + 0.92, y, 0.08, 1);
+
+    // Diagonal shine (top-left to mid-right) — brushed-metal gleam
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.beginPath();
+    ctx.moveTo(x, y + 0.55);
+    ctx.lineTo(x + 0.55, y);
+    ctx.lineTo(x + 0.55, y + 0.08);
+    ctx.lineTo(x + 0.08, y + 0.55);
+    ctx.closePath();
+    ctx.fill();
+
+    // Outer bevel border
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+    ctx.lineWidth = 0.04;
+    ctx.strokeRect(x, y, 1, 1);
+}
+
 function computeGhostY() {
     let y = player.pos.y;
     while (!collideAt(arena, player.matrix, player.pos.x, y + 1)) y++;
@@ -142,11 +199,7 @@ function drawMatrix(ctx, matrix, offset) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
             if (value !== 0) {
-                ctx.fillStyle = colors[value];
-                ctx.fillRect(x + offset.x, y + offset.y, 1, 1);
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 0.05;
-                ctx.strokeRect(x + offset.x, y + offset.y, 1, 1);
+                drawBlock(ctx, x + offset.x, y + offset.y, colors[value]);
             }
         });
     });
