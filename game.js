@@ -10,6 +10,8 @@ const speedElement = document.getElementById('speed-display');
 const overlay = document.getElementById('overlay');
 const gameOverScreen = document.getElementById('game-over');
 const scorePopup = document.getElementById('score-popup');
+const levelProgressFill = document.getElementById('level-progress-fill');
+const rankDisplay = document.getElementById('rank-display');
 
 let clearFlash = 0;
 let clearFlashRows = [];
@@ -42,10 +44,76 @@ function createMatrix(w, h) {
     return matrix;
 }
 
+function drawGrid() {
+    context.strokeStyle = 'rgba(13, 194, 255, 0.06)';
+    context.lineWidth = 0.02;
+    const cols = arena[0].length;
+    const rows = arena.length;
+    for (let x = 1; x < cols; x++) {
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, rows);
+        context.stroke();
+    }
+    for (let y = 1; y < rows; y++) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(cols, y);
+        context.stroke();
+    }
+}
+
+function drawGhost() {
+    if (!player.matrix) return;
+    const ghostY = computeGhostY();
+    if (ghostY === player.pos.y) return;
+    player.matrix.forEach((row, y) => {
+        row.forEach((value, x) => {
+            if (value !== 0) {
+                context.fillStyle = `rgba(${hexToRgb(colors[value])}, 0.18)`;
+                context.fillRect(x + player.pos.x, y + ghostY, 1, 1);
+                context.strokeStyle = `rgba(${hexToRgb(colors[value])}, 0.4)`;
+                context.lineWidth = 0.04;
+                context.strokeRect(x + player.pos.x, y + ghostY, 1, 1);
+            }
+        });
+    });
+}
+
+function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `${r}, ${g}, ${b}`;
+}
+
+function computeGhostY() {
+    let y = player.pos.y;
+    while (!collideAt(arena, player.matrix, player.pos.x, y + 1)) y++;
+    return y;
+}
+
+function collideAt(arena, matrix, px, py) {
+    for (let y = 0; y < matrix.length; ++y) {
+        for (let x = 0; x < matrix[y].length; ++x) {
+            if (matrix[y][x] !== 0) {
+                const ay = py + y, ax = px + x;
+                if (ay < 0) continue;
+                if (ay >= arena.length || ax < 0 || ax >= arena[0].length) return true;
+                if (arena[ay][ax] !== 0) return true;
+            }
+        }
+    }
+    return false;
+}
+
 function draw() {
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width / SCALE, canvas.height / SCALE);
+    drawGrid();
     drawMatrix(context, arena, { x: 0, y: 0 });
+    drawGhost();
     if (player.matrix) drawMatrix(context, player.matrix, player.pos);
 
     if (clearFlash) {
@@ -191,12 +259,23 @@ function updateBackground() {
         `radial-gradient(circle, hsl(${hue}, 60%, 15%) 0%, hsl(${hue}, 70%, 8%) 100%)`;
 }
 
-function updateScore() { 
-    scoreElement.innerText = player.score; 
+function updateScore() {
+    scoreElement.innerText = player.score;
     levelElement.innerText = player.level;
     linesElement.innerText = player.lines;
     bestElement.innerText = highScore;
-    speedElement.innerText = `${baseDropInterval}ms`;
+    speedElement.innerText = `${Math.round(baseDropInterval)}ms`;
+    // Level progress: how close to next 100-point threshold
+    const currentLevelStart = (player.level - 1) * 100;
+    const progress = Math.min(100, ((player.score - currentLevelStart) / 100) * 100);
+    levelProgressFill.style.width = `${progress}%`;
+}
+
+function getRank(score) {
+    if (score >= 5000) return { tier: 's', label: 'S · CYBER GOD' };
+    if (score >= 2000) return { tier: 'a', label: 'A · ELITE' };
+    if (score >= 800)  return { tier: 'b', label: 'B · PILOT' };
+    return { tier: 'c', label: 'C · ROOKIE' };
 }
 
 function gameOver() {
@@ -207,6 +286,10 @@ function gameOver() {
     }
     gameOverScreen.style.display = 'flex';
     document.getElementById('final-score').innerText = player.score;
+    document.getElementById('final-level').innerText = player.level;
+    document.getElementById('final-lines').innerText = player.lines;
+    const rank = getRank(player.score);
+    rankDisplay.innerHTML = `<div class="rank-badge ${rank.tier}">${rank.label}</div>`;
 }
 
 let baseDropInterval = 1000;

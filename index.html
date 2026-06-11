@@ -2,107 +2,425 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>俄羅斯方塊 - Tetris Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON TETRIS · 賽博方塊</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --neon-cyan: #0DC2FF;
+            --neon-green: #0DFF72;
+            --neon-magenta: #F538FF;
+            --neon-yellow: #FFE135;
+            --neon-pink: #FF0D72;
+            --neon-orange: #FF8E0D;
+            --bg-deep: #0A0E1A;
+            --grid-line: rgba(13, 194, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: radial-gradient(circle, #1a1a2e 0%, #16213e 100%);
+            background: var(--bg-deep);
             color: white;
-            margin: 0; padding: 0;
+            min-height: 100vh;
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; font-family: 'Orbitron', sans-serif;
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated grid backdrop */
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none; z-index: 0;
+            animation: gridPulse 8s ease-in-out infinite;
+        }
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Scanline overlay */
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent 0px, transparent 3px,
+                rgba(0, 0, 0, 0.15) 3px, rgba(0, 0, 0, 0.15) 4px);
+            pointer-events: none; z-index: 1000;
+            mix-blend-mode: multiply;
         }
 
         #game-wrapper {
-            display: flex; flex-direction: row; align-items: center; gap: 40px;
-            padding: 30px; background: rgba(255, 255, 255, 0.03);
-            border-radius: 30px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative; z-index: 1;
+            display: flex; flex-direction: row; align-items: center; gap: 32px;
+            padding: 28px;
+            background: linear-gradient(145deg, rgba(13, 194, 255, 0.05), rgba(245, 56, 255, 0.05));
+            border-radius: 24px;
+            box-shadow:
+                0 0 60px rgba(13, 194, 255, 0.15),
+                0 30px 80px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(13, 194, 255, 0.2);
+            backdrop-filter: blur(20px);
         }
 
-        .sidebar { flex: 0 0 240px; display: flex; flex-direction: column; gap: 25px; }
+        #game-wrapper::before, #game-wrapper::after {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            border: 2px solid var(--neon-cyan);
+        }
+        #game-wrapper::before {
+            top: -2px; left: -2px;
+            border-right: none; border-bottom: none;
+            border-top-left-radius: 24px;
+        }
+        #game-wrapper::after {
+            bottom: -2px; right: -2px;
+            border-left: none; border-top: none;
+            border-bottom-right-radius: 24px;
+        }
+
+        .sidebar {
+            flex: 0 0 240px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .game-title {
+            font-family: 'Audiowide', cursive;
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 4px;
+            text-align: center;
+            padding: 4px 0 12px 0;
+            position: relative;
+        }
+        .game-title::after {
+            content: ''; position: absolute;
+            bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 60%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+        }
+
+        .stat-box {
+            position: relative;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(13, 194, 255, 0.15);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        .stat-box:hover {
+            border-color: rgba(13, 194, 255, 0.4);
+            box-shadow: 0 0 20px rgba(13, 194, 255, 0.2);
+        }
+        .stat-box::before {
+            content: ''; position: absolute;
+            top: 12px; bottom: 12px; left: 0;
+            width: 3px; border-radius: 0 3px 3px 0;
+            background: var(--neon-cyan);
+        }
+        .stat-box.level-box::before { background: var(--neon-yellow); }
+        .stat-box.score-box::before { background: var(--neon-green); }
+        .stat-box.lines-box::before { background: var(--neon-cyan); }
+        .stat-box.best-box::before { background: var(--neon-magenta); }
+
+        .stat-box .label {
+            font-size: 0.62rem; color: #6B7C99;
+            letter-spacing: 3px; font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .stat-box .value {
+            font-size: 1.7rem; font-weight: 900;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 12px currentColor;
+            margin-top: 1px;
+        }
+        .stat-box.score-box .value { color: var(--neon-green); }
+        .stat-box.level-box .value { color: var(--neon-yellow); }
+        .stat-box.lines-box .value { color: var(--neon-cyan); }
+        .stat-box.best-box .value { color: var(--neon-magenta); }
+
+        .level-progress {
+            margin-top: 6px;
+            height: 4px; background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px; overflow: hidden;
+        }
+        .level-progress-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--neon-yellow), var(--neon-orange));
+            box-shadow: 0 0 8px var(--neon-yellow);
+            transition: width 0.3s ease;
+        }
+
+        .next-canvas-wrap {
+            margin: 8px auto 0; width: 90px; height: 90px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(13, 194, 255, 0.2);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #next { display: block; }
+
+        .controls-hint {
+            padding: 12px 14px;
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+            border-radius: 10px;
+            font-size: 0.72rem; color: #94A3B8;
+            font-family: 'Rajdhani', sans-serif;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .ctrl-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 2px 0;
+        }
+        .key {
+            display: inline-block;
+            background: rgba(13, 194, 255, 0.1);
+            border: 1px solid rgba(13, 194, 255, 0.3);
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.65rem;
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+        .action { color: #CBD5E1; }
+        .controls-hint hr {
+            border: 0; border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 6px 0;
+        }
+        .speed-readout {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 2px;
+        }
+        .speed-val {
+            color: var(--neon-yellow);
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+        }
 
         #game-container {
-            position: relative; width: 480px; height: 800px;
+            position: relative;
+            width: 480px; height: 800px;
             display: flex; justify-content: center; align-items: center;
         }
 
         canvas#tetris {
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            background-color: #000; box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
-        }
-
-        .stat-box {
-            background: rgba(255, 255, 255, 0.07); padding: 15px;
-            border-radius: 15px; text-align: center; border-left: 5px solid #0DC2FF;
-        }
-
-        .stat-box .label { font-size: 0.8rem; color: #888; letter-spacing: 2px; }
-        .stat-box .value { font-size: 2rem; font-weight: bold; color: #fff; }
-        .stat-box .sub { font-size: 0.75rem; color: #666; margin-top: 2px; }
-
-        #next { background: #000; border: 2px solid rgba(255, 255, 255, 0.1); margin: 10px auto; display: block; width: 120px; height: 120px; }
-
-        .controls-hint {
-            margin-top: auto; padding: 15px; background: rgba(0, 0, 0, 0.4);
-            border-radius: 15px; font-size: 0.75rem; color: #aaa; line-height: 2;
+            border: 2px solid rgba(13, 194, 255, 0.3);
+            background-color: #000;
+            box-shadow:
+                0 0 40px rgba(13, 194, 255, 0.25),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
         }
 
         @keyframes scoreFloat {
-            0% { opacity: 1; transform: translate(-50%, -50%); }
-            100% { opacity: 0; transform: translate(-50%, -160%); }
+            0%   { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
+            20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+            100% { opacity: 0; transform: translate(-50%, -180%) scale(1); }
         }
         #score-popup {
             position: absolute; top: 50%; left: 50%; z-index: 30;
-            font-size: 2.5rem; font-weight: bold; color: #0DFF72;
-            text-shadow: 0 0 20px rgba(13, 255, 114, 0.6);
+            font-size: 2.8rem; font-weight: 900;
+            color: var(--neon-green);
+            font-family: 'Audiowide', cursive;
+            text-shadow:
+                0 0 10px var(--neon-green),
+                0 0 20px var(--neon-green),
+                0 0 40px var(--neon-green);
             pointer-events: none; opacity: 0;
             transform: translate(-50%, -50%);
         }
-        #score-popup.active {
-            animation: scoreFloat 0.8s ease-out forwards;
-        }
+        #score-popup.active { animation: scoreFloat 1s ease-out forwards; }
 
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 20; border-radius: 5px;
+        .overlay-panel {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 20; border-radius: 4px;
+            backdrop-filter: blur(8px);
         }
+        #overlay { background: rgba(10, 14, 26, 0.85); }
+        #overlay h2, #game-over h2 {
+            font-family: 'Audiowide', cursive;
+            font-size: 3.2rem;
+            letter-spacing: 8px;
+            margin-bottom: 4px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleGlow 2s ease-in-out infinite;
+        }
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+        #game-over h2 {
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-orange));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.4rem;
+        }
+        .overlay-sub {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            color: #94A3B8;
+            letter-spacing: 4px;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+        }
+        .game-over-stats {
+            font-family: 'Rajdhani', sans-serif;
+            color: #CBD5E1;
+            margin: 12px 0 20px 0;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .stat-line {
+            display: flex; justify-content: space-between;
+            gap: 24px; min-width: 200px;
+            padding: 2px 0;
+        }
+        .stat-line .lbl { color: #6B7C99; }
+        .stat-line .val { color: var(--neon-cyan); font-weight: 700; font-family: 'Orbitron', sans-serif; }
+        .stat-line.score .val { color: var(--neon-green); }
+        .stat-line.level .val { color: var(--neon-yellow); }
+        .stat-line.lines .val { color: var(--neon-cyan); }
+
+        .rank-badge {
+            font-family: 'Audiowide', cursive;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            padding: 6px 16px;
+            border-radius: 6px;
+            margin: 4px 0 8px 0;
+            border: 1px solid;
+        }
+        .rank-badge.s { color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 16px var(--neon-cyan); }
+        .rank-badge.a { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 16px var(--neon-green); }
+        .rank-badge.b { color: var(--neon-yellow); border-color: var(--neon-yellow); box-shadow: 0 0 16px var(--neon-yellow); }
+        .rank-badge.c { color: #94A3B8; border-color: #94A3B8; }
 
         button {
-            padding: 12px 35px; font-size: 1.2rem; background: linear-gradient(45deg, #0DC2FF, #0DFF72);
-            border: none; color: white; cursor: pointer; border-radius: 30px; font-family: 'Orbitron';
+            position: relative;
+            padding: 14px 42px;
+            font-size: 0.95rem;
+            font-family: 'Audiowide', cursive;
+            letter-spacing: 3px;
+            color: #fff;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow:
+                0 0 20px rgba(13, 194, 255, 0.5),
+                0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            text-transform: uppercase;
         }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 0 30px rgba(245, 56, 255, 0.7),
+                0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+        button:active { transform: translateY(0); }
+        button::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+        button:hover::before { transform: translateX(100%); }
 
-        #game-over { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,0,0,0.4); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:5; }
+        #game-over { background: rgba(255, 13, 114, 0.12); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
         <div class="sidebar">
-            <div class="stat-box level-box"><div class="label">LEVEL</div><div id="level" class="value">1</div></div>
-            <div class="stat-box"><div class="label">SCORE</div><div id="score" class="value">0</div></div>
-            <div class="stat-box"><div class="label">LINES</div><div id="lines" class="value">0</div></div>
-            <div class="stat-box"><div class="label">BEST</div><div id="best" class="value">0</div></div>
-            <div class="stat-box"><div class="label">NEXT</div><canvas id="next" width="120" height="120"></canvas></div>
+            <div class="game-title">NEON TETRIS</div>
+
+            <div class="stat-box level-box">
+                <div class="label">LEVEL</div>
+                <div id="level" class="value">1</div>
+                <div class="level-progress"><div id="level-progress-fill" class="level-progress-fill"></div></div>
+            </div>
+
+            <div class="stat-box score-box">
+                <div class="label">SCORE</div>
+                <div id="score" class="value">0</div>
+            </div>
+
+            <div class="stat-box lines-box">
+                <div class="label">LINES</div>
+                <div id="lines" class="value">0</div>
+            </div>
+
+            <div class="stat-box best-box">
+                <div class="label">BEST</div>
+                <div id="best" class="value">0</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="label">NEXT</div>
+                <div class="next-canvas-wrap">
+                    <canvas id="next" width="120" height="120"></canvas>
+                </div>
+            </div>
+
             <div class="controls-hint">
-                <p><span style="color:#0DFF72">← →</span> : MOVE</p>
-                <p><span style="color:#0DFF72">↑</span> : ROTATE</p>
-                <p><span style="color:#0DFF72">↓</span> : DROP</p>
-                <p><span style="color:#0DFF72">SPACE</span> : HARD DROP</p>
-                <hr style="border: 0; border-top: 1px solid #333;">
-                <p><span style="color:#0DFF72">P</span> : PAUSE | <span style="color:#0DFF72">R</span> : RESTART</p>
-                <hr style="border: 0; border-top: 1px solid #333;">
-                <p>SPEED: <span id="speed-display" style="color:#FFE135">1000ms</span></p>
+                <div class="ctrl-row"><span class="action">移動</span> <span><span class="key">←</span> <span class="key">→</span></span></div>
+                <div class="ctrl-row"><span class="action">旋轉</span> <span class="key">↑</span></div>
+                <div class="ctrl-row"><span class="action">軟降</span> <span class="key">↓</span></div>
+                <div class="ctrl-row"><span class="action">硬降</span> <span class="key">SPACE</span></div>
+                <hr>
+                <div class="ctrl-row"><span class="action">暫停</span> <span class="key">P</span></div>
+                <div class="ctrl-row"><span class="action">重開</span> <span class="key">R</span></div>
+                <hr>
+                <div class="speed-readout">
+                    <span class="action">SPEED</span>
+                    <span id="speed-display" class="speed-val">1000ms</span>
+                </div>
             </div>
         </div>
 
         <div id="game-container">
             <canvas id="tetris" width="480" height="800"></canvas>
-            <div id="overlay"><h2 id="overlay-title">TETRIS</h2><button onclick="startGame()">START</button></div>
-            <div id="game-over"><h2 style="color:#ff4d4d">GAME OVER</h2><p>Score: <span id="final-score">0</span></p><button onclick="resetGame()">RETRY</button></div>
+            <div id="overlay" class="overlay-panel">
+                <h2 id="overlay-title">NEON TETRIS</h2>
+                <div class="overlay-sub">Cyber Block Puzzle</div>
+                <button onclick="startGame()">START</button>
+            </div>
+            <div id="game-over" class="overlay-panel" style="display:none;">
+                <h2>GAME OVER</h2>
+                <div id="rank-display"></div>
+                <div class="game-over-stats">
+                    <div class="stat-line score"><span class="lbl">SCORE</span><span class="val" id="final-score">0</span></div>
+                    <div class="stat-line level"><span class="lbl">LEVEL</span><span class="val" id="final-level">1</span></div>
+                    <div class="stat-line lines"><span class="lbl">LINES</span><span class="val" id="final-lines">0</span></div>
+                </div>
+                <button onclick="resetGame()">RETRY</button>
+            </div>
             <div id="score-popup"></div>
         </div>
     </div>
