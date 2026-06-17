@@ -409,7 +409,7 @@
             <div id="overlay" class="overlay-panel">
                 <h2 id="overlay-title">NEON TETRIS</h2>
                 <div class="overlay-sub">Cyber Block Puzzle</div>
-                <button onclick="startGame()">START</button>
+                <button onclick="startGame(); this.blur()">START</button>
             </div>
             <div id="game-over" class="overlay-panel" style="display:none;">
                 <h2>GAME OVER</h2>
@@ -419,12 +419,13 @@
                     <div class="stat-line level"><span class="lbl">LEVEL</span><span class="val" id="final-level">1</span></div>
                     <div class="stat-line lines"><span class="lbl">LINES</span><span class="val" id="final-lines">0</span></div>
                 </div>
-                <button onclick="resetGame()">RETRY</button>
+                <button onclick="resetGame(); this.blur()">RETRY</button>
             </div>
             <div id="score-popup"></div>
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🧊</text></svg>">
+    <script src="game.js?v=2"></script>
 </body>
 </html>

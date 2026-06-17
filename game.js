@@ -259,7 +259,12 @@ function collide(arena, player) {
     const [m, o] = [player.matrix, player.pos];
     for (let y = 0; y < m.length; ++y) {
         for (let x = 0; x < m[y].length; ++x) {
-            if (m[y][x] !== 0 && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) return true;
+            if (m[y][x] !== 0) {
+                const ay = y + o.y, ax = x + o.x;
+                if (ay < 0) continue;
+                if (ay >= arena.length || ax < 0 || ax >= arena[0].length) return true;
+                if (arena[ay][ax] !== 0) return true;
+            }
         }
     }
     return false;
@@ -343,6 +348,7 @@ function gameOver() {
     document.getElementById('final-lines').innerText = player.lines;
     const rank = getRank(player.score);
     rankDisplay.innerHTML = `<div class="rank-badge ${rank.tier}">${rank.label}</div>`;
+    document.getElementById('overlay-title').innerText = 'NEON TETRIS';
 }
 
 let baseDropInterval = 1000;
@@ -417,13 +423,40 @@ function initGame() {
 }
 
 window.addEventListener('keydown', e => {
+    // P (pause toggle) works in any state — must work even when game is paused
+    if (e.keyCode === 80) {
+        e.preventDefault();
+        gameRunning = !gameRunning;
+        if (gameRunning) {
+            overlay.style.display = 'none';
+            document.getElementById('overlay-title').innerText = 'NEON TETRIS';
+            lastTime = performance.now();
+            dropCounter = 0; // prevent immediate drop on resume
+            requestAnimationFrame(gameLoop);
+        } else {
+            overlay.style.display = 'flex';
+            document.getElementById('overlay-title').innerText = 'PAUSED';
+        }
+        return;
+    }
+
+    // R (reset) works in any state — allows reset from paused or game-over
+    if (e.keyCode === 82) {
+        e.preventDefault();
+        resetGame();
+        return;
+    }
+
+    // Other game keys only work when game is running
     if (!gameRunning) return;
+
     switch (e.keyCode) {
-        case 37: playerMove(-1); break;
-        case 39: playerMove(1); break;
-        case 40: playerDrop(); break;
-        case 38: playerRotate(1); break;
+        case 37: e.preventDefault(); playerMove(-1); break;
+        case 39: e.preventDefault(); playerMove(1); break;
+        case 40: e.preventDefault(); playerDrop(); break;
+        case 38: e.preventDefault(); playerRotate(1); break;
         case 32: // Space (Hard Drop)
+            e.preventDefault();
             while (!collide(arena, player)) { player.pos.y++; }
             player.pos.y--;
             merge(arena, player);
@@ -432,18 +465,6 @@ window.addEventListener('keydown', e => {
             updateScore();
             dropCounter = 0;
             break;
-        case 80: // P (Pause)
-            gameRunning = !gameRunning;
-            if (gameRunning) {
-                overlay.style.display = 'none';
-                lastTime = performance.now();
-                requestAnimationFrame(gameLoop);
-            } else {
-                overlay.style.display = 'flex';
-                document.getElementById('overlay-title').innerText = 'PAUSED';
-            }
-            break;
-        case 82: resetGame(); break;
     }
 });
 

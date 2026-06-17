@@ -1,0 +1,5 @@
+
+# Test artifacts
+.omo/
+.playwright-mcp/
+*.pyc
